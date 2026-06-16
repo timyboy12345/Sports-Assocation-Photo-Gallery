@@ -2,7 +2,7 @@ services:
   client:
     build: ./client
     ports:
-      - "127.0.0.1:5173:5173"
+      - "5173:5173"
     depends_on:
       - server
     restart: always
@@ -10,7 +10,7 @@ services:
   server:
     build: ./server
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     volumes:
       - ./uploads:/app/uploads
       - ./photos.db:/app/photos.db
