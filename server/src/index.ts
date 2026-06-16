@@ -11,7 +11,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port: string = process.env.PORT || '3001';
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../../uploads');
@@ -58,7 +58,7 @@ async function initOidc() {
 initOidc();
 
 // Helper to sanitize folder names
-const sanitizeFolderName = (name: string) => 
+const sanitizeFolderName = (name: string) =>
   name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 // Auth Middleware
@@ -85,11 +85,11 @@ app.get('/api/auth/callback', async (req, res) => {
   try {
     const tokenSet = await client.callback(REDIRECT_URI, params);
     const userinfo = await client.userinfo(tokenSet);
-    
+
     // Persist user in DB
     const email = userinfo.email;
     const name = (userinfo as any).name || (userinfo as any).preferred_username || email;
-    
+
     db.prepare(`
       INSERT INTO users (email, name, last_login) 
       VALUES (?, ?, CURRENT_TIMESTAMP)
@@ -143,10 +143,10 @@ const storage = multer.diskStorage({
     const albumId = req.params.id;
     const album = db.prepare('SELECT name FROM albums WHERE id = ?').get(albumId) as any;
     if (!album) return cb(new Error('Album not found'), '');
-    
+
     const folderName = sanitizeFolderName(album.name);
     const albumDir = path.join(uploadsDir, folderName);
-    
+
     if (!fs.existsSync(albumDir)) {
       fs.mkdirSync(albumDir, { recursive: true });
     }
@@ -183,7 +183,7 @@ app.delete('/api/photos/:id', isAuthenticated, (req, res) => {
 app.post('/api/albums/:id/upload', isAuthenticated, upload.array('photos'), (req, res) => {
   const albumId = req.params.id;
   const files = req.files as Express.Multer.File[];
-  
+
   const album = db.prepare('SELECT name FROM albums WHERE id = ?').get(albumId) as any;
   const folderName = sanitizeFolderName(album.name);
 
@@ -199,6 +199,6 @@ app.post('/api/albums/:id/upload', isAuthenticated, upload.array('photos'), (req
   res.json({ success: true, count: files.length });
 });
 
-app.listen(port, () => {
+app.listen(parseInt(port), '0.0.0.0', () => {
   console.log(`Server running at http://localhost:${port}`);
 });
