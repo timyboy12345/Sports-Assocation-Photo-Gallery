@@ -10,7 +10,7 @@ services:
   server:
     build: ./server
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - ./uploads:/app/uploads
       - ./photos.db:/app/photos.db
