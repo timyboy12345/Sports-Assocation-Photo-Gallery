@@ -48,7 +48,7 @@ const processPhotoVariants = async (relativeFilename: string) => {
     const baseImage = sharp(sourceBuffer, { failOn: 'none' }).rotate();
 
     if (!fs.existsSync(thumbnailPath)) {
-      console.log('Generating thumbnail for:', relativeFilename);
+      console.log(' - Generating thumbnail for:', relativeFilename);
 
       await baseImage
         .clone()
@@ -58,13 +58,15 @@ const processPhotoVariants = async (relativeFilename: string) => {
     }
 
     if (!fs.existsSync(compressedPath)) {
-      console.log('Generating compressed variant for:', relativeFilename);
+      console.log(' - Generating compressed variant for:', relativeFilename);
 
       await baseImage
         .clone()
         .webp({ quality: 90 })
         .toFile(compressedPath);
     }
+
+    console.log(' - Photo variants generated for:', relativeFilename);
   } catch (err) {
     console.error('Failed variant generation for file:', relativeFilename, err);
   } finally {
@@ -72,8 +74,12 @@ const processPhotoVariants = async (relativeFilename: string) => {
   }
 };
 
-const processPhotosInBackground = (relativeFilenames: string[]) => {
-  void Promise.allSettled(relativeFilenames.map((filename) => processPhotoVariants(filename)));
+const processPhotosInBackground = async (relativeFilenames: string[]) => {
+  for (const filename of relativeFilenames) {
+    await processPhotoVariants(filename);
+  }
+
+  console.log('All photos processed');
 };
 
 const processAllPhotosInBackground = () => {
