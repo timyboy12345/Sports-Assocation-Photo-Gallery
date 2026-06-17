@@ -104,7 +104,7 @@ const PhotoGallery = () => {
             className="aspect-square overflow-hidden bg-gray-100 group relative transition-all duration-300 cursor-pointer"
           >
             <img
-              src={getUploadsUrl(photo.filename, 'webp')}
+              src={getUploadsUrl(photo.filename, 'thumb')}
               alt="Event"
               className="w-full h-full object-cover transform transition-transform duration-500"
               loading="lazy"
@@ -141,7 +141,7 @@ const PhotoGallery = () => {
 
           <div className="relative w-full h-full flex items-center justify-center p-4 md:p-12">
             <img
-              src={getUploadsUrl(data.photos[selectedIndex].filename, 'original')}
+              src={getUploadsUrl(data.photos[selectedIndex].filename, 'webp')}
               alt="Full size"
               className="max-w-full max-h-full object-contain animate-in zoom-in-95 duration-200"
             />
