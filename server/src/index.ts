@@ -200,7 +200,9 @@ app.get('/api/users', isAuthenticated, (req, res) => {
 // --- Gallery Routes ---
 app.get('/api/albums', (req, res) => {
   const albums = db.prepare(`
-    SELECT a.*, (SELECT filename FROM photos WHERE album_id = a.id LIMIT 1) as cover_photo 
+    SELECT a.*,
+      (SELECT filename FROM photos WHERE album_id = a.id LIMIT 1) as cover_photo,
+      (SELECT COUNT(*) FROM photos WHERE album_id = a.id) as photo_count
     FROM albums a 
     ORDER BY date DESC
   `).all();
@@ -241,6 +243,23 @@ app.post('/api/albums', isAuthenticated, (req, res) => {
 app.patch('/api/albums/:id', isAuthenticated, (req, res) => {
   const { date, name } = req.body;
   db.prepare('UPDATE albums SET date = ?, name = ? WHERE id = ?').run(date, name, req.params.id);
+  res.json({ success: true });
+});
+
+app.delete('/api/albums/:id', isAuthenticated, mutationRateLimit, (req, res) => {
+  const albumId = req.params.id;
+  const album = db.prepare('SELECT id FROM albums WHERE id = ?').get(albumId) as { id: number } | undefined;
+
+  if (!album) {
+    return res.status(404).json({ error: 'Album not found' });
+  }
+
+  const photoCount = db.prepare('SELECT COUNT(*) as count FROM photos WHERE album_id = ?').get(albumId) as { count: number };
+  if (photoCount.count > 0) {
+    return res.status(400).json({ error: 'Album is not empty' });
+  }
+
+  db.prepare('DELETE FROM albums WHERE id = ?').run(albumId);
   res.json({ success: true });
 });
 

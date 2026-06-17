@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {useNavigate} from 'react-router-dom';
 import api from '../api';
-import { LogIn, LogOut, Plus, FolderPlus, User as UserIcon, Loader2, Edit } from 'lucide-react';
+import { LogIn, LogOut, Plus, FolderPlus, User as UserIcon, Loader2, Edit, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface User {
@@ -16,7 +16,8 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [albumName, setAlbumName] = useState('');
-  const [albums, setAlbums] = useState<{ id: number; name: string; date: string }[]>([]);
+  const [albums, setAlbums] = useState<{ id: number; name: string; date: string; photo_count?: number }[]>([]);
+  const [deletingAlbumId, setDeletingAlbumId] = useState<number | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -82,6 +83,26 @@ const AdminDashboard = () => {
       }
     } catch (err) {
       alert('Failed to create album. Please ensure you are logged in.');
+    }
+  };
+
+  const handleDeleteAlbum = async (albumId: number, photoCount = 0) => {
+    if (photoCount > 0) {
+      alert('Dit album kan niet verwijderd worden omdat het nog foto\'s bevat.');
+      return;
+    }
+
+    if (!window.confirm('Weet je zeker dat je dit lege album wilt verwijderen?')) return;
+
+    setDeletingAlbumId(albumId);
+    try {
+      await api.delete(`/albums/${albumId}`, { withCredentials: true });
+      setAlbums((prev) => prev.filter((album) => album.id !== albumId));
+    } catch (err: any) {
+      const serverMessage = err?.response?.data?.error;
+      alert(serverMessage || 'Failed to delete album.');
+    } finally {
+      setDeletingAlbumId(null);
     }
   };
 
@@ -177,12 +198,24 @@ const AdminDashboard = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {albums.map(a => (
-            <Link to={`/admin/edit/${a.id}`} key={a.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:text-red-900 transition-colors group">
-              <div className="truncate pr-4">
-                <p className="font-semibold truncate">{a.name}</p>
-                <p className="text-xs opacity-50">{new Date(a.date).toLocaleDateString()}</p>
-              </div>
-            </Link>
+            <div key={a.id} className="flex items-center gap-2 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <Link to={`/admin/edit/${a.id}`} className="flex-1 min-w-0 hover:text-red-900 transition-colors group">
+                <div className="truncate pr-4">
+                  <p className="font-semibold truncate">{a.name}</p>
+                  <p className="text-xs opacity-50">{new Date(a.date).toLocaleDateString()}</p>
+                  <p className="text-xs opacity-50">{a.photo_count ?? 0} foto&apos;s</p>
+                </div>
+              </Link>
+              <button
+                type="button"
+                onClick={() => handleDeleteAlbum(a.id, a.photo_count ?? 0)}
+                disabled={(a.photo_count ?? 0) > 0 || deletingAlbumId === a.id}
+                className="p-2 rounded-lg cursor-pointer text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:text-gray-300"
+                title={(a.photo_count ?? 0) > 0 ? 'Album bevat nog foto\'s' : 'Verwijder album'}
+              >
+                {deletingAlbumId === a.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+              </button>
+            </div>
           ))}
           {albums.length === 0 && (
             <p className="col-span-full text-center py-6 text-gray-400 italic">No albums created yet.</p>

@@ -26,6 +26,7 @@ const EditAlbum = () => {
     const [uploadedCount, setUploadedCount] = useState(0);
     const [uploadMessage, setUploadMessage] = useState<string | null>(null);
     const [collapsed, setCollapsed] = useState(true);
+    const [selectedPhotoIds, setSelectedPhotoIds] = useState<number[]>([]);
 
     useEffect(() => {
         fetchAlbum();
@@ -43,6 +44,7 @@ const EditAlbum = () => {
             setData(res.data);
             setAlbumDate(new Date(res.data.album.date).toISOString().split('T')[0]);
             setAlbumName(res.data.album.name);
+            setSelectedPhotoIds([]);
         } catch (err) {
             console.error('Failed to fetch album', err);
         } finally {
@@ -66,16 +68,53 @@ const EditAlbum = () => {
         }
     };
 
+    const removePhotosFromState = (photoIds: number[]) => {
+        const idSet = new Set(photoIds);
+        setData(prev => prev ? {
+            ...prev,
+            photos: prev.photos.filter(p => !idSet.has(p.id))
+        } : null);
+        setSelectedPhotoIds(prev => prev.filter(id => !idSet.has(id)));
+    };
+
+    const deletePhotos = async (photoIds: number[]) => {
+        await Promise.all(photoIds.map((photoId) => api.delete(`/photos/${photoId}`, {withCredentials: true})));
+        removePhotosFromState(photoIds);
+    };
+
     const handleDeletePhoto = async (photoId: number) => {
         if (!window.confirm('Are you sure you want to delete this photo?')) return;
         try {
-            await api.delete(`/photos/${photoId}`, {withCredentials: true});
-            setData(prev => prev ? {
-                ...prev,
-                photos: prev.photos.filter(p => p.id !== photoId)
-            } : null);
+            await deletePhotos([photoId]);
         } catch (err) {
             alert('Failed to delete photo.');
+        }
+    };
+
+    const handleDeleteSelectedPhotos = async () => {
+        if (selectedPhotoIds.length === 0) return;
+        if (!window.confirm(`Are you sure you want to delete ${selectedPhotoIds.length} selected photo(s)?`)) return;
+        try {
+            await deletePhotos(selectedPhotoIds);
+        } catch (err) {
+            alert('Failed to delete selected photos.');
+        }
+    };
+
+    const togglePhotoSelection = (photoId: number) => {
+        setSelectedPhotoIds(prev =>
+            prev.includes(photoId)
+                ? prev.filter(id => id !== photoId)
+                : [...prev, photoId]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (!data) return;
+        if (selectedPhotoIds.length === data.photos.length) {
+            setSelectedPhotoIds([]);
+        } else {
+            setSelectedPhotoIds(data.photos.map(photo => photo.id));
         }
     };
 
@@ -237,6 +276,25 @@ const EditAlbum = () => {
                         <ImageIcon size={24} className="text-red-900"/>
                         Manage Photos ({data.photos.length})
                     </h2>
+                    {data.photos.length > 0 && (
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={toggleSelectAll}
+                                className="px-3 py-2 cursor-pointer text-sm rounded-lg border border-gray-200 hover:bg-gray-50"
+                            >
+                                {selectedPhotoIds.length === data.photos.length ? 'Deselect all' : 'Select all'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDeleteSelectedPhotos}
+                                disabled={selectedPhotoIds.length === 0}
+                                className="px-3 py-2 cursor-pointer text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed"
+                            >
+                                Delete selected ({selectedPhotoIds.length})
+                            </button>
+                        </div>
+                    )}
                 </div>
 
 
@@ -244,6 +302,14 @@ const EditAlbum = () => {
                     {data.photos.map(photo => (
                         <div key={photo.id}
                              className="group relative aspect-square overflow-hidden bg-gray-50">
+                            <label className="absolute top-2 left-2 z-10">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedPhotoIds.includes(photo.id)}
+                                    onChange={() => togglePhotoSelection(photo.id)}
+                                    className="h-4 w-4 cursor-pointer accent-red-600"
+                                />
+                            </label>
                             <img
                                 src={getUploadsUrl(photo.filename)}
                                 alt="Album photo"
