@@ -19,7 +19,7 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({origin: process.env.SERVER_URL || 'http://localhost:5173', credentials: true}));
 app.use(express.json());
 app.use('/uploads', express.static(uploadsDir));
 
@@ -99,7 +99,7 @@ app.get('/api/auth/callback', async (req, res) => {
     `).run(email, name);
 
     (req.session as any).user = userinfo;
-    res.redirect('http://localhost:5173/admin');
+    res.redirect(`${process.env.SERVER_URL || 'http://localhost:5173'}/admin`);
   } catch (err) {
     console.error('Auth callback failed:', err);
     res.status(500).send('Authentication failed');

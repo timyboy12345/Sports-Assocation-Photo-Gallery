@@ -6,6 +6,9 @@ services:
     depends_on:
       - server
     restart: always
+    environment:
+      CLIENT_PORT: ${CLIENT_PORT}
+      CLIENT_URL: ${CLIENT_URL}
 
   server:
     build: ./server
@@ -14,9 +17,15 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./photos.db:/app/photos.db
-    env_file:
-      - .env
     restart: always
+    environment:
+      SERVER_URL: ${SERVER_URL}
+      SERVER_PORT: ${SERVER_PORT}
+      SERVER_SESSION_SECRET: ${SERVER_SECRET}
+      SERVER_OIDC_ISSUER: ${SERVER_OIDC_ISSUER}
+      SERVER_OIDC_CLIENT_ID: ${SERVER_OIDC_CLIENT_ID}
+      SERVER_OIDC_CLIENT_SECRET: ${SERVER_OIDC_CLIENT_SECRET}
+
 
 volumes:
   uploads:
