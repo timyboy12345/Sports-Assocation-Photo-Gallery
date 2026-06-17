@@ -9,7 +9,7 @@ interface Photo {
 }
 
 interface AlbumData {
-    album: { id: number; name: string; date: string };
+    album: { id: number; name: string; date: string; has_password?: number };
     photos: Photo[];
 }
 
@@ -21,6 +21,9 @@ const EditAlbum = () => {
     const [uploading, setUploading] = useState(false);
     const [albumDate, setAlbumDate] = useState('');
     const [albumName, setAlbumName] = useState('');
+    const [albumPassword, setAlbumPassword] = useState('');
+    const [removePassword, setRemovePassword] = useState(false);
+    const [hasPassword, setHasPassword] = useState(false);
     const [files, setFiles] = useState<FileList | null>(null);
     const [uploadTotal, setUploadTotal] = useState(0);
     const [uploadedCount, setUploadedCount] = useState(0);
@@ -44,6 +47,9 @@ const EditAlbum = () => {
             setData(res.data);
             setAlbumDate(new Date(res.data.album.date).toISOString().split('T')[0]);
             setAlbumName(res.data.album.name);
+            setHasPassword(Boolean(res.data.album.has_password));
+            setAlbumPassword('');
+            setRemovePassword(false);
             setSelectedPhotoIds([]);
         } catch (err) {
             console.error('Failed to fetch album', err);
@@ -56,10 +62,27 @@ const EditAlbum = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            await api.patch(`/albums/${id}`, {
+            const payload: { name: string; date: string; password?: string } = {
                 name: albumName,
                 date: albumDate
+            };
+
+            if (removePassword) {
+                payload.password = '';
+            } else if (albumPassword.trim()) {
+                payload.password = albumPassword;
+            }
+
+            await api.patch(`/albums/${id}`, {
+                ...payload
             }, {withCredentials: true});
+            if (removePassword) {
+                setHasPassword(false);
+            } else if (albumPassword.trim()) {
+                setHasPassword(true);
+            }
+            setAlbumPassword('');
+            setRemovePassword(false);
             alert('Album updated successfully!');
         } catch (err) {
             alert('Failed to update album.');
@@ -207,6 +230,33 @@ const EditAlbum = () => {
                                             required
                                         />
                                     </div>
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-sm font-medium text-gray-700">Album wachtwoord</label>
+                                    <input
+                                        type="password"
+                                        value={albumPassword}
+                                        onChange={(e) => {
+                                            setAlbumPassword(e.target.value);
+                                            if (e.target.value) setRemovePassword(false);
+                                        }}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
+                                        placeholder={hasPassword ? 'Laat leeg om huidige wachtwoord te behouden' : 'Stel een wachtwoord in (optioneel)'}
+                                    />
+                                    {hasPassword && (
+                                        <label className="inline-flex items-center gap-2 text-sm text-gray-600">
+                                            <input
+                                                type="checkbox"
+                                                checked={removePassword}
+                                                onChange={(e) => {
+                                                    setRemovePassword(e.target.checked);
+                                                    if (e.target.checked) setAlbumPassword('');
+                                                }}
+                                                className="h-4 w-4 accent-red-600"
+                                            />
+                                            Verwijder huidig wachtwoord
+                                        </label>
+                                    )}
                                 </div>
                             </div>
                             <button

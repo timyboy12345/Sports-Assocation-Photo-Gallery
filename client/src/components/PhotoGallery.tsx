@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import api, { getUploadsUrl } from '../api';
-import { ArrowLeft, Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, X, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 
 interface Photo {
   id: number;
@@ -9,28 +9,53 @@ interface Photo {
 }
 
 interface AlbumData {
-  album: { id: number; name: string };
+  album: { id: number; name: string; has_password?: number };
   photos: Photo[];
 }
 
 const PhotoGallery = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<AlbumData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [requiresPassword, setRequiresPassword] = useState(false);
+  const [password, setPassword] = useState(searchParams.get('pass') || '');
+  const [passwordError, setPasswordError] = useState('');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  useEffect(() => {
+  const fetchAlbum = useCallback(async () => {
     setLoading(true);
-    api.get(`/albums/${id}`)
-      .then(res => {
-        setData(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to fetch album photos', err);
-        setLoading(false);
+    setPasswordError('');
+
+    try {
+      const passFromQuery = searchParams.get('pass');
+      const res = await api.get(`/albums/${id}`, {
+        params: passFromQuery ? { pass: passFromQuery } : undefined
       });
-  }, [id]);
+      setData(res.data);
+      setRequiresPassword(false);
+    } catch (err: any) {
+      if (err?.response?.status === 403 && err?.response?.data?.requiresPassword) {
+        setRequiresPassword(true);
+        if (searchParams.get('pass')) {
+          setPasswordError('Onjuist wachtwoord.');
+        }
+      } else {
+        console.error('Failed to fetch album photos', err);
+      }
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, searchParams]);
+
+  useEffect(() => {
+    fetchAlbum();
+  }, [fetchAlbum]);
+
+  useEffect(() => {
+    setPassword(searchParams.get('pass') || '');
+  }, [searchParams]);
 
   useEffect(() => {
     if (data?.album.name) {
@@ -69,6 +94,53 @@ const PhotoGallery = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const currentPass = searchParams.get('pass') || '';
+    const nextPass = password.trim();
+    if (currentPass === nextPass) {
+      fetchAlbum();
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextPass) {
+      nextParams.set('pass', nextPass);
+    } else {
+      nextParams.delete('pass');
+    }
+    setSearchParams(nextParams);
+  };
+
+  if (requiresPassword) {
+    return (
+      <div className="max-w-md mx-auto bg-white rounded-2xl border border-gray-200 p-8 space-y-6">
+        <div className="text-center space-y-2">
+          <Lock size={32} className="mx-auto text-red-900" />
+          <h1 className="text-xl font-bold text-gray-900">Dit album is beveiligd</h1>
+          <p className="text-sm text-gray-500">Voer het album wachtwoord in om verder te gaan.</p>
+        </div>
+        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
+            placeholder="Wachtwoord"
+            required
+          />
+          {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+          <button
+            type="submit"
+            className="w-full bg-red-600 hover:bg-red-700 cursor-pointer text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+          >
+            Open album
+          </button>
+        </form>
       </div>
     );
   }

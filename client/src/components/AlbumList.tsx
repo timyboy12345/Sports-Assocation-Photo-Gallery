@@ -1,13 +1,14 @@
 import {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import api, {getUploadsUrl} from '../api';
-import {Calendar, ChevronRight, Image as ImageIcon} from 'lucide-react';
+import {Calendar, ChevronRight, Image as ImageIcon, Lock} from 'lucide-react';
 
 interface Album {
     id: number;
     name: string;
     date: string;
     cover_photo?: string;
+    has_password?: number;
 }
 
 const AlbumList = () => {
@@ -57,6 +58,12 @@ const AlbumList = () => {
                                 <h3 className="text-lg font-semibold text-gray-900 transition-colors truncate">
                                     {album.name}
                                 </h3>
+                                {Boolean(album.has_password) && (
+                                    <span className="mr-2 inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                                        <Lock size={12}/>
+                                        Beveiligd
+                                    </span>
+                                )}
                                 <ChevronRight size={20}
                                               className="text-gray-400 transform group-hover:translate-x-1 transition-all flex-shrink-0"/>
                             </div>

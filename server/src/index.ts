@@ -8,6 +8,7 @@ import session from 'express-session';
 import { rateLimit } from 'express-rate-limit';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import sharp from 'sharp';
 import { Issuer, Strategy, Client } from 'openid-client';
 import db from './db';
@@ -129,6 +130,21 @@ initOidc();
 const sanitizeFolderName = (name: string) =>
   name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
+const hashAlbumPassword = (password: string) => {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+};
+
+const verifyAlbumPassword = (password: string, storedHash: string) => {
+  const [salt, hashHex] = storedHash.split(':');
+  if (!salt || !hashHex) return false;
+
+  const storedBuffer = Buffer.from(hashHex, 'hex');
+  const suppliedBuffer = crypto.scryptSync(password, salt, storedBuffer.length);
+  return crypto.timingSafeEqual(storedBuffer, suppliedBuffer);
+};
+
 // Auth Middleware
 const isAuthenticated = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   if ((req.session as any).user) {
@@ -200,7 +216,8 @@ app.get('/api/users', isAuthenticated, (req, res) => {
 // --- Gallery Routes ---
 app.get('/api/albums', (req, res) => {
   const albums = db.prepare(`
-    SELECT a.*,
+    SELECT a.id, a.name, a.date,
+      CASE WHEN a.password_hash IS NULL OR a.password_hash = '' THEN 0 ELSE 1 END as has_password,
       (SELECT filename FROM photos WHERE album_id = a.id LIMIT 1) as cover_photo,
       (SELECT COUNT(*) FROM photos WHERE album_id = a.id) as photo_count
     FROM albums a 
@@ -210,9 +227,35 @@ app.get('/api/albums', (req, res) => {
 });
 
 app.get('/api/albums/:id', (req, res) => {
-  const album = db.prepare('SELECT * FROM albums WHERE id = ?').get(req.params.id);
+  const album = db.prepare(`
+    SELECT *,
+      CASE WHEN password_hash IS NULL OR password_hash = '' THEN 0 ELSE 1 END as has_password
+    FROM albums
+    WHERE id = ?
+  `).get(req.params.id) as any;
+  if (!album) {
+    return res.status(404).json({ error: 'Album not found' });
+  }
+
+  const user = (req.session as any).user;
+  const requiresPassword = Boolean(album.password_hash);
+  if (requiresPassword && !user) {
+    const pass = typeof req.query.pass === 'string' ? req.query.pass : '';
+    if (!pass || !verifyAlbumPassword(pass, album.password_hash)) {
+      return res.status(403).json({ error: 'Album is password protected', requiresPassword: true });
+    }
+  }
+
   const photos = db.prepare('SELECT * FROM photos WHERE album_id = ?').all(req.params.id);
-  res.json({ album, photos });
+  res.json({
+    album: {
+      id: album.id,
+      name: album.name,
+      date: album.date,
+      has_password: album.has_password
+    },
+    photos
+  });
 });
 
 // --- Protected Routes ---
@@ -235,14 +278,28 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.post('/api/albums', isAuthenticated, (req, res) => {
-  const { name } = req.body;
-  const info = db.prepare('INSERT INTO albums (name) VALUES (?)').run(name);
+  const { name, password } = req.body;
+  const passwordHash = typeof password === 'string' && password.trim() ? hashAlbumPassword(password) : null;
+  const info = db.prepare('INSERT INTO albums (name, password_hash) VALUES (?, ?)').run(name, passwordHash);
   res.json({ id: info.lastInsertRowid, name });
 });
 
 app.patch('/api/albums/:id', isAuthenticated, (req, res) => {
-  const { date, name } = req.body;
-  db.prepare('UPDATE albums SET date = ?, name = ? WHERE id = ?').run(date, name, req.params.id);
+  const { date, name, password } = req.body;
+  const updates: string[] = ['date = ?', 'name = ?'];
+  const values: any[] = [date, name];
+
+  if (typeof password === 'string') {
+    if (password.trim()) {
+      updates.push('password_hash = ?');
+      values.push(hashAlbumPassword(password));
+    } else {
+      updates.push('password_hash = NULL');
+    }
+  }
+
+  values.push(req.params.id);
+  db.prepare(`UPDATE albums SET ${updates.join(', ')} WHERE id = ?`).run(...values);
   res.json({ success: true });
 });
 

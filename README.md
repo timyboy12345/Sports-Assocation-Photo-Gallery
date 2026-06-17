@@ -42,6 +42,7 @@ Right now, the application only supports authentication through OpenID Connect, 
 Microsoft 365 account linked to their organization, a Google login, GitHub, or any other social login.
 
 Once authenticated, users can create and edit albums.
+Albums can optionally be protected with an album password from the admin edit page; visitors then need to provide that password (also supported via `?pass=...` in the album URL).
 
 ![admin.png](wiki/admin.png)
 ![album-edit.png](wiki/album-edit.png)

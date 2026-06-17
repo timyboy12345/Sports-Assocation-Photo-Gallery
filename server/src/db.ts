@@ -27,4 +27,10 @@ db.exec(`
   );
 `);
 
+const albumColumns = db.prepare(`PRAGMA table_info(albums)`).all() as { name: string }[];
+const hasPasswordColumn = albumColumns.some((column) => column.name === 'password_hash');
+if (!hasPasswordColumn) {
+  db.exec('ALTER TABLE albums ADD COLUMN password_hash TEXT');
+}
+
 export default db;
