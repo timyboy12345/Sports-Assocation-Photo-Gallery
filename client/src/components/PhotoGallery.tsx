@@ -104,7 +104,7 @@ const PhotoGallery = () => {
             className="aspect-square overflow-hidden bg-gray-100 group relative shadow-sm transition-all duration-300 cursor-pointer"
           >
             <img
-              src={getUploadsUrl(photo.filename)}
+              src={getUploadsUrl(photo.filename, 'webp')}
               alt="Event"
               className="w-full h-full object-cover transform transition-transform duration-500"
               loading="lazy"
@@ -127,28 +127,28 @@ const PhotoGallery = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 transition-opacity duration-300">
           <button
             onClick={closeSlideshow}
-            className="absolute top-6 right-6 p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all z-50"
+            className="absolute cursor-pointer top-6 right-6 p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all z-50"
           >
             <X size={24} />
           </button>
 
           <button
             onClick={prevPhoto}
-            className="absolute left-6 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all z-50"
+            className="absolute cursor-pointer left-6 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all z-50"
           >
             <ChevronLeft size={32} />
           </button>
 
           <div className="relative w-full h-full flex items-center justify-center p-4 md:p-12">
             <img
-              src={getUploadsUrl(data.photos[selectedIndex].filename)}
+              src={getUploadsUrl(data.photos[selectedIndex].filename, 'original')}
               alt="Full size"
               className="max-w-full max-h-full object-contain shadow-2xl animate-in zoom-in-95 duration-200"
             />
           </div>
           <button
             onClick={nextPhoto}
-            className="absolute right-6 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all z-50"
+            className="absolute cursor-pointer right-6 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all z-50"
           >
             <ChevronRight size={32} />
           </button>
