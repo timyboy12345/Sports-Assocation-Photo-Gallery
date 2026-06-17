@@ -48,15 +48,15 @@ const processPhotoVariants = async (relativeFilename: string) => {
     if (!fs.existsSync(thumbnailPath)) {
       await baseImage
         .clone()
-        .resize(320, 320, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 70 })
+        .resize(520, 520, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
         .toFile(thumbnailPath);
     }
 
     if (!fs.existsSync(compressedPath)) {
       await baseImage
         .clone()
-        .webp({ quality: 65 })
+        .webp({ quality: 90 })
         .toFile(compressedPath);
     }
   } catch (err) {
