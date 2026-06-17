@@ -32,6 +32,12 @@ const PhotoGallery = () => {
       });
   }, [id]);
 
+  useEffect(() => {
+    if (data?.album.name) {
+      document.title = `${data.album.name} / Fotoalbum`;
+    }
+  }, [data]);
+
   const nextPhoto = useCallback(() => {
     if (data && selectedIndex !== null) {
       setSelectedIndex((selectedIndex + 1) % data.photos.length);

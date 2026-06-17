@@ -24,10 +24,18 @@ const EditAlbum = () => {
     const [files, setFiles] = useState<FileList | null>(null);
     const [uploadTotal, setUploadTotal] = useState(0);
     const [uploadedCount, setUploadedCount] = useState(0);
+    const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+    const [collapsed, setCollapsed] = useState(true);
 
     useEffect(() => {
         fetchAlbum();
     }, [id]);
+
+    useEffect(() => {
+        if (data?.album.name) {
+            document.title = `Bewerk ${data.album.name} / Fotoalbum`;
+        }
+    }, [data]);
 
     const fetchAlbum = async () => {
         try {
@@ -94,7 +102,7 @@ const EditAlbum = () => {
 
             await fetchAlbum();
             setFiles(null);
-            alert('Photos uploaded successfully!');
+            setUploadMessage('Foto\'s geupload!');
         } catch (err) {
             alert('Upload failed. Please ensure you are logged in.');
         } finally {
@@ -120,46 +128,106 @@ const EditAlbum = () => {
                     <ArrowLeft size={16}/>
                     Back to Admin
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-900">Edit Album: {data.album.name}</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Album aanpassen: {data.album.name}</h1>
             </div>
 
-            <section className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-                <form onSubmit={handleSave} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Album Name</label>
-                            <input
-                                type="text"
-                                value={albumName}
-                                onChange={(e) => setAlbumName(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Event Date</label>
-                            <div className="relative">
-                                <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                                              size={18}/>
+            <section className="bg-white p-4 rounded-2xl border border-gray-200">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold">Album Instellingen & Uploaden</h2>
+                    <button
+                        onClick={() => setCollapsed(!collapsed)}
+                        className="text-sm cursor-pointer font-medium text-gray-500 hover:text-red-900"
+                    >
+                        {collapsed ? 'Uitvouwen' : 'Invouwen'}
+                    </button>
+                </div>
+                {!collapsed && (
+                    <div className="space-y-6 mt-6 lg:flex lg:space-y-0 lg:space-x-6">
+                        <form onSubmit={handleSave} className="space-y-6 lg:flex-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">Album Name</label>
+                                    <input
+                                        type="text"
+                                        value={albumName}
+                                        onChange={(e) => setAlbumName(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">Event Date</label>
+                                    <div className="relative">
+                                        <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                                      size={18}/>
+                                        <input
+                                            type="date"
+                                            value={albumDate}
+                                            onChange={(e) => setAlbumDate(e.target.value)}
+                                            className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 cursor-pointer text-white font-semibold py-3 px-8 rounded-xl transition-colors disabled:bg-red-300"
+                            >
+                                {saving ? <Loader2 className="animate-spin" size={20}/> : <Save size={20}/>}
+                                Aanpassingen opslaan
+                            </button>
+                        </form>
+
+                        <form onSubmit={handleUpload} className="space-y-4 lg:flex-1">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">Selecteer foto's</label>
                                 <input
-                                    type="date"
-                                    value={albumDate}
-                                    onChange={(e) => setAlbumDate(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
+                                    type="file"
+                                    multiple
+                                    onChange={(e) => setFiles(e.target.files)}
+                                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-900 hover:file:bg-red-100 cursor-pointer"
                                     required
                                 />
                             </div>
-                        </div>
+                            {uploading && uploadTotal > 0 && (
+                                <div className="space-y-2">
+                                    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-red-600 transition-all"
+                                            style={{width: `${(uploadedCount / uploadTotal) * 100}%`}}
+                                        />
+                                    </div>
+                                    <p className="text-sm text-gray-600">
+                                        {uploadedCount}/{uploadTotal} foto's geüpload ·
+                                        Nog {uploadTotal - uploadedCount} te gaan
+                                    </p>
+                                </div>
+                            )}
+                            <button
+                                type="submit"
+                                className="flex cursor-pointer items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+                                disabled={uploading}
+                            >
+                                {uploading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={20}/>
+                                        Uploading...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload size={20}/>
+                                        Upload foto's
+                                    </>
+                                )}
+                            </button>
+                            {uploadMessage && (
+                                <p className="text-sm text-green-600">{uploadMessage}</p>
+                            )}
+                        </form>
                     </div>
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 cursor-pointer text-white font-semibold py-3 px-8 rounded-xl transition-colors disabled:bg-red-300"
-                    >
-                        {saving ? <Loader2 className="animate-spin" size={20}/> : <Save size={20}/>}
-                        Aanpassingen opslaan
-                    </button>
-                </form>
+                )}
             </section>
 
             <section className="space-y-4">
@@ -170,59 +238,11 @@ const EditAlbum = () => {
                     </h2>
                 </div>
 
-                <section className="bg-white p-6 rounded-2xl border border-gray-200 space-y-4">
-                    <div className="flex items-center gap-2">
-                        <Upload size={20} className="text-red-900"/>
-                        <h3 className="text-lg font-semibold text-gray-900">Upload foto's</h3>
-                    </div>
-                    <form onSubmit={handleUpload} className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Selecteer foto's</label>
-                            <input
-                                type="file"
-                                multiple
-                                onChange={(e) => setFiles(e.target.files)}
-                                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-900 hover:file:bg-red-100 cursor-pointer"
-                                required
-                            />
-                        </div>
-                        {uploading && uploadTotal > 0 && (
-                            <div className="space-y-2">
-                                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-red-600 transition-all"
-                                        style={{width: `${(uploadedCount / uploadTotal) * 100}%`}}
-                                    />
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                    {uploadedCount}/{uploadTotal} foto's geüpload · Nog {uploadTotal - uploadedCount} te gaan
-                                </p>
-                            </div>
-                        )}
-                        <button
-                            type="submit"
-                            className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
-                            disabled={uploading}
-                        >
-                            {uploading ? (
-                                <>
-                                    <Loader2 className="animate-spin" size={20}/>
-                                    Uploading...
-                                </>
-                            ) : (
-                                <>
-                                    <Upload size={20}/>
-                                    Upload foto's
-                                </>
-                            )}
-                        </button>
-                    </form>
-                </section>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1">
                     {data.photos.map(photo => (
                         <div key={photo.id}
-                             className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                             className="group relative aspect-square overflow-hidden bg-gray-50">
                             <img
                                 src={getUploadsUrl(photo.filename)}
                                 alt="Album photo"
@@ -232,7 +252,7 @@ const EditAlbum = () => {
                                 className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <button
                                     onClick={() => handleDeletePhoto(photo.id)}
-                                    className="p-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"
+                                    className="p-3 cursor-pointer bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
                                     title="Delete Photo"
                                 >
                                     <Trash2 size={20}/>

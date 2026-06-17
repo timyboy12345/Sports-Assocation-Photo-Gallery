@@ -3,7 +3,7 @@ import { Image, LayoutDashboard, Library } from 'lucide-react';
 
 const Sidebar = () => {
   const navItems = [
-    { name: 'Photos', path: '/', icon: <Image size={20} /> },
+    { name: 'Albums', path: '/', icon: <Image size={20} /> },
     { name: 'Beheer', path: '/admin', icon: <LayoutDashboard size={20} /> },
   ];
 

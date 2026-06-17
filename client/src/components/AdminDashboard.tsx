@@ -34,6 +34,8 @@ const AdminDashboard = () => {
     }
   };
 
+  document.title = 'Admin - Fotoalbum';
+
   const fetchAlbums = async () => {
     try {
       const res = await api.get('/albums');
@@ -139,10 +141,10 @@ const AdminDashboard = () => {
           </div>
           <form onSubmit={handleCreateAlbum} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Album Name</label>
+              <label className="text-sm font-medium text-gray-700">Album naam</label>
               <input
                 type="text"
-                placeholder="e.g. Summer Vacation 2026"
+                placeholder="Naam van album"
                 value={albumName}
                 onChange={(e) => setAlbumName(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
@@ -197,7 +199,7 @@ const AdminDashboard = () => {
               <tr className="border-b border-gray-100">
                 <th className="pb-4 font-semibold text-gray-600">User</th>
                 <th className="pb-4 font-semibold text-gray-600">Email</th>
-                <th className="pb-4 font-semibold text-gray-600 text-right">Last Login</th>
+                <th className="pb-4 font-semibold text-gray-600 text-right">Laatste login</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">

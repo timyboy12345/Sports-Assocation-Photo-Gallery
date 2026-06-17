@@ -21,7 +21,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 app.use(cors({origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true}));
 app.use(express.json());
-app.use('/uploads', express.static(uploadsDir));
+app.use('/api/uploads', express.static(uploadsDir));
 
 // Session config
 app.use(session({
@@ -135,23 +135,6 @@ app.get('/api/albums/:id', (req, res) => {
   const album = db.prepare('SELECT * FROM albums WHERE id = ?').get(req.params.id);
   const photos = db.prepare('SELECT * FROM photos WHERE album_id = ?').all(req.params.id);
   res.json({ album, photos });
-});
-
-app.get("/api/uploads/:folder/:file", (req, res) => {
-  const { folder, file } = req.params;
-
-  const filePath = path.join(uploadsDir, folder, file);
-
-  // prevent path traversal
-  if (!filePath.startsWith(uploadsDir)) {
-    return res.sendStatus(403);
-  }
-
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-    if (err) return res.sendStatus(404);
-
-    res.sendFile(filePath);
-  });
 });
 
 // --- Protected Routes ---
