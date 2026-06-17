@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 
-const dbPath = path.resolve(__dirname, process.env.DB_PATH || './photos.db');
+const dbPath = process.env.DB_PATH || path.resolve(__dirname, './photos.db');
 const db = new Database(dbPath);
 
 // Initialize tables

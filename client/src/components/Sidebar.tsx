@@ -4,7 +4,7 @@ import { Image, LayoutDashboard, Library } from 'lucide-react';
 const Sidebar = () => {
   const navItems = [
     { name: 'Photos', path: '/', icon: <Image size={20} /> },
-    { name: 'Admin', path: '/admin', icon: <LayoutDashboard size={20} /> },
+    { name: 'Beheer', path: '/admin', icon: <LayoutDashboard size={20} /> },
   ];
 
   return (
@@ -12,7 +12,7 @@ const Sidebar = () => {
       <div className="p-6 border-b border-gray-100">
         <h1 className="text-xl font-bold text-red-900 flex items-center gap-2">
           <Library className="text-red-900" />
-          Fotoalbum
+          Foto's
         </h1>
       </div>
 

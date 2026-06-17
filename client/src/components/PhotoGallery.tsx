@@ -62,7 +62,7 @@ const PhotoGallery = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -112,7 +112,7 @@ const PhotoGallery = () => {
       {data.photos.length === 0 && (
         <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
           <ImageIcon className="mx-auto text-gray-300 mb-4" size={48} />
-          <p className="text-gray-500 text-lg">No photos in this album yet.</p>
+          <p className="text-gray-500 text-lg">Dit album heeft nog geen foto's.</p>
         </div>
       )}
 

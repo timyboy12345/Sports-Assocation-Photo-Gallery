@@ -111,7 +111,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="animate-spin text-blue-600" size={32} />
+        <Loader2 className="animate-spin text-red-600" size={32} />
       </div>
     );
   }
@@ -119,18 +119,18 @@ const AdminDashboard = () => {
   if (!user) {
     return (
       <div className="max-w-md mx-auto mt-10">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
+          <div className="w-16 h-16 bg-red-50 text-red-900 rounded-full flex items-center justify-center mx-auto mb-6">
             <UserIcon size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Access</h1>
-          <p className="text-gray-500 mb-8">Please log in to manage your albums and upload new photos.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin</h1>
+          <p className="text-gray-500 mb-8">Log in om afbeeldingen te uploaden, albums aan te maken en meer.</p>
           <button
             onClick={handleLogin}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors cursor-pointer"
           >
             <LogIn size={20} />
-            Login via OIDC
+            Login via Microsoft
           </button>
         </div>
       </div>
@@ -139,33 +139,33 @@ const AdminDashboard = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+      <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-gray-200">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl">
+          <div className="w-12 h-12 bg-red-50 text-red-900 rounded-full flex items-center justify-center font-bold text-xl">
             {(user.name || user.email || 'A')[0].toUpperCase()}
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Welcome, {user.name || user.email || 'Admin'}!</h1>
-            <p className="text-sm text-gray-500">Managing Photo Library</p>
+            <h1 className="text-xl font-bold text-gray-900">Welkom, {user.name || user.email || 'Admin'}!</h1>
+            <p className="text-sm text-gray-500">All In Fotobibliotheek</p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 text-gray-500 hover:text-red-600 font-medium transition-colors"
+          className="flex items-center gap-2 cursor-pointer text-gray-500 hover:text-red-900 font-medium transition-colors"
         >
           <LogOut size={20} />
-          Logout
+          Uitloggen
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Create Album Section */}
-        <section className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <section className="bg-white p-8 rounded-2xl border border-gray-200 space-y-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+            <div className="p-2 bg-red-50 text-red-900 rounded-lg">
               <FolderPlus size={24} />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Create New Album</h2>
+            <h2 className="text-xl font-bold text-gray-900">Nieuw Album Aanmaken</h2>
           </div>
           <form onSubmit={handleCreateAlbum} className="space-y-4">
             <div className="space-y-2">
@@ -175,22 +175,22 @@ const AdminDashboard = () => {
                 placeholder="e.g. Summer Vacation 2026"
                 value={albumName}
                 onChange={(e) => setAlbumName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
             >
               <Plus size={20} />
-              Create Album
+              Album aanmaken
             </button>
           </form>
         </section>
 
         {/* Upload Photos Section */}
-        <section className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <section className="bg-white p-8 rounded-2xl border border-gray-200 space-y-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-50 text-green-600 rounded-lg">
               <Upload size={24} />
@@ -203,7 +203,7 @@ const AdminDashboard = () => {
               <select
                 value={selectedAlbum}
                 onChange={(e) => setSelectedAlbum(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all appearance-none bg-white"
               >
                 {albums.length === 0 && <option disabled>No albums available</option>}
                 {albums.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
@@ -215,13 +215,13 @@ const AdminDashboard = () => {
                 type="file"
                 multiple
                 onChange={(e) => setFiles(e.target.files)}
-                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-900 hover:file:bg-red-100 cursor-pointer"
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
               disabled={uploading || albums.length === 0}
             >
               {uploading ? (
@@ -241,27 +241,21 @@ const AdminDashboard = () => {
       </div>
 
       {/* Manage Albums Section */}
-      <section className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+      <section className="bg-white p-8 rounded-2xl border border-gray-200 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+          <div className="p-2 bg-red-50 text-red-900 rounded-lg">
             <Edit size={24} />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Manage Albums</h2>
+          <h2 className="text-xl font-bold text-gray-900">Beheer Albums</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {albums.map(a => (
-            <div key={a.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-200 transition-colors group">
+            <Link to={`/admin/edit/${a.id}`} key={a.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:text-red-900 transition-colors group">
               <div className="truncate pr-4">
-                <p className="font-semibold text-gray-900 truncate">{a.name}</p>
-                <p className="text-xs text-gray-500">{new Date(a.date).toLocaleDateString()}</p>
+                <p className="font-semibold truncate">{a.name}</p>
+                <p className="text-xs opacity-50">{new Date(a.date).toLocaleDateString()}</p>
               </div>
-              <Link
-                to={`/admin/edit/${a.id}`}
-                className="p-2 bg-white text-gray-400 hover:text-blue-600 rounded-lg border border-gray-200 shadow-sm hover:border-blue-200 transition-all"
-              >
-                <Edit size={18} />
-              </Link>
-            </div>
+            </Link>
           ))}
           {albums.length === 0 && (
             <p className="col-span-full text-center py-6 text-gray-400 italic">No albums created yet.</p>
@@ -270,14 +264,14 @@ const AdminDashboard = () => {
       </section>
 
       {/* User Management Section */}
-      <section className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+      <section className="bg-white p-8 rounded-2xl border border-gray-200 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+          <div className="p-2 bg-red-50 text-red-900 rounded-lg">
             <UserIcon size={24} />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">User Management</h2>
+          <h2 className="text-xl font-bold text-gray-900">Beheer Gebruikers</h2>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-8 p-8">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-gray-100">

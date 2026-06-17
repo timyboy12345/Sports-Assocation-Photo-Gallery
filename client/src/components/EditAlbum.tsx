@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 import {useParams, Link} from 'react-router-dom';
-import api from '../api';
+import api, {getUploadsUrl} from '../api';
 import {ArrowLeft, Trash2, Save, Calendar as CalendarIcon, Loader2, Image as ImageIcon} from 'lucide-react';
 
 interface Photo {
@@ -69,7 +69,7 @@ const EditAlbum = () => {
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-[400px]">
-            <Loader2 className="animate-spin text-blue-600" size={32}/>
+            <Loader2 className="animate-spin text-red-900" size={32}/>
         </div>
     );
 
@@ -80,7 +80,7 @@ const EditAlbum = () => {
             <div className="flex flex-col gap-4">
                 <Link
                     to="/admin"
-                    className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors w-fit"
+                    className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-red-900 transition-colors w-fit"
                 >
                     <ArrowLeft size={16}/>
                     Back to Admin
@@ -97,7 +97,7 @@ const EditAlbum = () => {
                                 type="text"
                                 value={albumName}
                                 onChange={(e) => setAlbumName(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
                                 required
                             />
                         </div>
@@ -110,7 +110,7 @@ const EditAlbum = () => {
                                     type="date"
                                     value={albumDate}
                                     onChange={(e) => setAlbumDate(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent transition-all"
                                     required
                                 />
                             </div>
@@ -119,10 +119,10 @@ const EditAlbum = () => {
                     <button
                         type="submit"
                         disabled={saving}
-                        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl transition-colors disabled:bg-blue-300"
+                        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 cursor-pointer text-white font-semibold py-3 px-8 rounded-xl transition-colors disabled:bg-red-300"
                     >
                         {saving ? <Loader2 className="animate-spin" size={20}/> : <Save size={20}/>}
-                        Save Changes
+                        Aanpassingen opslaan
                     </button>
                 </form>
             </section>
@@ -130,7 +130,7 @@ const EditAlbum = () => {
             <section className="space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <ImageIcon size={24} className="text-blue-600"/>
+                        <ImageIcon size={24} className="text-red-900"/>
                         Manage Photos ({data.photos.length})
                     </h2>
                 </div>
@@ -140,7 +140,7 @@ const EditAlbum = () => {
                         <div key={photo.id}
                              className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
                             <img
-                                src={`http://localhost:3001/uploads/${photo.filename}`}
+                                src={getUploadsUrl(photo.filename)}
                                 alt="Album photo"
                                 className="w-full h-full object-cover"
                             />
@@ -160,7 +160,7 @@ const EditAlbum = () => {
 
                 {data.photos.length === 0 && (
                     <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                        <p className="text-gray-500">No photos in this album.</p>
+                        <p className="text-gray-500">Dit album heeft nog geen foto's.</p>
                     </div>
                 )}
             </section>
