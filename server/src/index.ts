@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import session from 'express-session';
+import { rateLimit } from 'express-rate-limit';
 import path from 'path';
 import fs from 'fs';
 import sharp from 'sharp';
@@ -59,7 +60,7 @@ const processPhotoVariants = async (relativeFilename: string) => {
         .toFile(compressedPath);
     }
   } catch (err) {
-    console.error(`Failed variant generation for ${relativeFilename}:`, err);
+    console.error('Failed variant generation for file:', relativeFilename, err);
   } finally {
     currentlyProcessingPhotos.delete(relativeFilename);
   }
@@ -124,6 +125,14 @@ const isAuthenticated = (req: express.Request, res: express.Response, next: expr
     res.status(401).json({ error: 'Unauthorized' });
   }
 };
+
+const mutationRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 120,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Too many requests' }
+});
 
 // --- Auth Routes ---
 app.get('/api/auth/login', (req, res) => {
@@ -223,7 +232,7 @@ app.patch('/api/albums/:id', isAuthenticated, (req, res) => {
   res.json({ success: true });
 });
 
-app.delete('/api/photos/:id', isAuthenticated, (req, res) => {
+app.delete('/api/photos/:id', isAuthenticated, mutationRateLimit, (req, res) => {
   const photo = db.prepare('SELECT filename FROM photos WHERE id = ?').get(req.params.id) as any;
   if (photo) {
     const filePath = path.join(uploadsDir, photo.filename);
@@ -246,7 +255,7 @@ app.delete('/api/photos/:id', isAuthenticated, (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/albums/:id/upload', isAuthenticated, upload.array('photos'), (req, res) => {
+app.post('/api/albums/:id/upload', isAuthenticated, mutationRateLimit, upload.array('photos'), (req, res) => {
   const albumId = req.params.id;
   const files = req.files as Express.Multer.File[];
 
