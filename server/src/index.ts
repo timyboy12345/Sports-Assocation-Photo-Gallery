@@ -35,7 +35,7 @@ app.use(session({
 const OIDC_ISSUER = process.env.OIDC_ISSUER || 'https://accounts.google.com';
 const OIDC_CLIENT_ID = process.env.OIDC_CLIENT_ID || 'your-client-id';
 const OIDC_CLIENT_SECRET = process.env.OIDC_CLIENT_SECRET || 'your-client-secret';
-const REDIRECT_URI = 'http://localhost:3001/api/auth/callback';
+const REDIRECT_URI = (process.env.SERVER_URL || 'http://localhost:3001') + '/api/auth/callback';
 
 let client: Client;
 
