@@ -3,8 +3,6 @@ services:
     build: ./client
     ports:
       - "5173:80"
-    depends_on:
-      - server
     restart: always
     environment:
       CLIENT_PORT: ${CLIENT_PORT}
@@ -21,8 +19,6 @@ services:
       - ./uploads:/app/uploads
       - ./photos.db:/app/photos.db
     restart: always
-    env_file:
-      - .env.server
 
 
 volumes:
