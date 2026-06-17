@@ -162,6 +162,14 @@ const mutationRateLimit = rateLimit({
   message: { error: 'Too many requests' }
 });
 
+const albumAccessRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'Too many requests' }
+});
+
 // --- Auth Routes ---
 app.get('/api/auth/login', (req, res) => {
   if (!client) return res.status(500).send('OIDC not initialized');
@@ -226,7 +234,7 @@ app.get('/api/albums', (req, res) => {
   res.json(albums);
 });
 
-app.get('/api/albums/:id', (req, res) => {
+app.get('/api/albums/:id', albumAccessRateLimit, (req, res) => {
   const album = db.prepare(`
     SELECT *,
       CASE WHEN password_hash IS NULL OR password_hash = '' THEN 0 ELSE 1 END as has_password
@@ -277,14 +285,14 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-app.post('/api/albums', isAuthenticated, (req, res) => {
+app.post('/api/albums', isAuthenticated, mutationRateLimit, (req, res) => {
   const { name, password } = req.body;
   const passwordHash = typeof password === 'string' && password.trim() ? hashAlbumPassword(password) : null;
   const info = db.prepare('INSERT INTO albums (name, password_hash) VALUES (?, ?)').run(name, passwordHash);
   res.json({ id: info.lastInsertRowid, name });
 });
 
-app.patch('/api/albums/:id', isAuthenticated, (req, res) => {
+app.patch('/api/albums/:id', isAuthenticated, mutationRateLimit, (req, res) => {
   const { date, name, password } = req.body;
   const updates: string[] = ['date = ?', 'name = ?'];
   const values: any[] = [date, name];
