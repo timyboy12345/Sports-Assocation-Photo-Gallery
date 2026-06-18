@@ -1,4 +1,4 @@
-# Sports Association Photo Gallery ⚾️ ⚽️ 🏈
+# CLOI 🎞 Central Library of Images
 
 This repository can be used to host a photo gallery for sports associations, groups of friends, or any other group of
 people that may want to host images centrally on their own server.
@@ -7,6 +7,14 @@ people that may want to host images centrally on their own server.
 
 Pictures are grouped in albums, where each album is an event that started on a specific date. Albums are sorted by date
 on the home page, and users can select an album to view.
+
+## Features
+
+- Self-hosted using Docker
+- Possibility to password-protect albums
+- EXIF metadata extraction
+- Thumbnail generation for fast image viewing
+- One central library, not multiple libraries for different users
 
 ## Setting up
 
