@@ -9,8 +9,8 @@ const api = axios.create({
 
 export const getUploadsUrl = (path: string, type: 'thumb' | 'original' | 'webp' = 'thumb') => {
   if (!path) return '';
-  if (type === 'webp') path = path.replace(/\.(jpg|jpeg|png)$/, '.compressed.webp');
-  if (type === 'thumb') path = path.replace(/\.(jpg|jpeg|png)$/, '.thumb.webp');
+  if (type === 'webp') path = path.toLowerCase().replace(/\.(jpg|jpeg|png)$/, '.compressed.webp');
+  if (type === 'thumb') path = path.toLowerCase().replace(/\.(jpg|jpeg|png)$/, '.thumb.webp');
 
   return `${API_URL}/api/uploads/${path}`;
 };
